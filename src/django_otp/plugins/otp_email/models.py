@@ -1,3 +1,6 @@
+import logging
+import traceback
+
 from django.core.mail import send_mail
 from django.db import models
 from django.template import Context, Template
@@ -7,6 +10,9 @@ from django_otp.models import SideChannelDevice, ThrottlingMixin
 from django_otp.util import hex_validator, random_hex
 
 from .conf import settings
+
+
+logger = logging.getLogger(__name__)
 
 
 def default_key():  # pragma: no cover
@@ -56,6 +62,9 @@ class EmailDevice(ThrottlingMixin, SideChannelDevice):
         :type extra_context: dict
 
         """
+        logger.debug(f'generate_challenge called for {self.email or self.user.email}')
+        logger.debug('Stack trace:\n%s', ''.join(traceback.format_stack()))
+
         self.generate_token(valid_secs=settings.OTP_EMAIL_TOKEN_VALIDITY)
 
         context = {'token': self.token, **(extra_context or {})}
